@@ -4,6 +4,10 @@ var fs = require('fs');
 // Configuration file to import the app Specific Password and sender mail
 var config = require('../config');
 
+// DB model of users
+var User = require('../db/models/user');
+
+// Creating transport object with authentication and services
 var transport = nodemailer.createTransport({
      // in case it is a well known service you can simply name it. No need of host and ports
      // to see the list of well known services you can visit https://github.com/nodemailer/nodemailer-wellknown#supported-services
