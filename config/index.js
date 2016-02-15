@@ -12,7 +12,11 @@ var config = {
 	},
 	smsAlertNumbers: [
 		918237392861
-	]
+	],
+	mailAlert: {
+		senderMail: 'suryadeep10@gmail.com',
+		appSpecificPassword: 'ecxaddsjdmqbhbma'
+	}
 };
 
 module.exports = config;
