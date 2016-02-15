@@ -11,6 +11,7 @@ var fs = require('fs');
 var Utility = new require('./index')();
 var Review = require('../db/models/review');
 var SMSClient = new require('./sms_alert')();
+var MAILClient = new require('./mail_alert')();
 var config = require('../config');
 var Vendor = require('../db/models/vendor');
 var fieldsOmittedFromResponse = {
@@ -799,6 +800,7 @@ DBConnector.prototype.createBuzz = function (callback, buzzObject) {
                                                         } else {
 
                                                             SMSClient.triggerAlert(buzz);
+                                                            MAILClient.triggerMail(buzz);
                                                             callback(null, _getLocation(buzz._id, "Buzz", "created", "buzzes"));
                                                         }
                                                     });
@@ -831,6 +833,7 @@ DBConnector.prototype.createBuzz = function (callback, buzzObject) {
                                                                 } else {
 
                                                                     SMSClient.triggerAlert(buzz);
+                                                                    MAILClient.triggerMail(buzz);
                                                                     callback(null, _getLocation(buzz._id, "Buzz", "created", "buzzes"));
                                                                 }
                                                             });
@@ -863,6 +866,7 @@ DBConnector.prototype.createBuzz = function (callback, buzzObject) {
                                                             } else {
 
                                                                 SMSClient.triggerAlert(buzz);
+                                                                MAILClient.triggerMail(buzz);
                                                                 callback(null, _getLocation(buzz._id, "Buzz", "created", "buzzes"));
                                                             }
                                                         });
