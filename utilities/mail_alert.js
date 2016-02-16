@@ -11,7 +11,7 @@ var User = require('../db/models/user');
 var transport = nodemailer.createTransport({
      // in case it is a well known service you can simply name it. No need of host and ports
      // to see the list of well known services you can visit https://github.com/nodemailer/nodemailer-wellknown#supported-services
-    service: 'gmail',
+    service: 'zoho',
     auth: {
         user: config.mailAlert.senderMail,
         pass: config.mailAlert.appSpecificPassword // this should be the Application Specific Password else it wont work
@@ -57,7 +57,7 @@ MAILClient.prototype.triggerMail = function (buzz) {
         } else {
 
             var buzzer_mail = buzz.buzzer_mail;
-            var admin_mail = '';
+            var admin_mail = 'raj.abhay03@gmail.com';
             var buzzed_user_mail = user.email;
             // for sending mail to the buzzer
             transport.sendMail({
