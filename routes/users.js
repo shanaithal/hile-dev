@@ -42,6 +42,7 @@ router.route('/users')
 
                 response.status(err.code).json(err);
             } else {
+
                 if (users.length > 0) {
                     connector.getCollectionCount(function (err, collectionSize) {
 
@@ -112,7 +113,12 @@ router.route('/users/:user_id')
                 if (err) {
                     response.status(err.code).json(err);
                 } else {
+                    if (Utility.isArray(user)) {
+
+                        user = user[0];
+                    }
                     if (user.email !== undefined) {
+
                         response.status(200).json(Utility.getFormattedResponse(user));
                     } else {
                         errorResponse.sendErrorResponse(response, 404, constants.NOT_FOUND_ERROR, "The requested resource not found.");
@@ -126,7 +132,12 @@ router.route('/users/:user_id')
                 if (err) {
                     response.status(err.code).json(err);
                 } else {
+                    if (Utility.isArray(user)) {
+
+                        user = user[0];
+                    }
                     if (user.email !== undefined) {
+
                         response.status(200).json(Utility.getFormattedResponse(user));
                     } else {
                         errorResponse.sendErrorResponse(response, 404, constants.NOT_FOUND_ERROR, "The requested resource not found.");

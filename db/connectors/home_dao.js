@@ -17,6 +17,7 @@ var HomeDAO = function () {
 
 HomeDAO.prototype.createHome = function (homeObject, id_type, callback) {
 
+    homeObject.owner_mail = homeObject.owner_mail.toLowerCase();
     if (homeObject.community_name !== undefined) {
 
         homeObject.location.community_name = homeObject.community_name;
@@ -26,7 +27,7 @@ HomeDAO.prototype.createHome = function (homeObject, id_type, callback) {
 
         case constants.Email:
             User.findOne({
-                email: homeObject.owner_mail.toLowerCase()
+                email: homeObject.owner_mail
             }, {
                 email: 1
             }, function (err, owner) {
@@ -149,9 +150,45 @@ HomeDAO.prototype.createHome = function (homeObject, id_type, callback) {
 
 HomeDAO.prototype.updateHome = function (homeObject, home_id, id_type, callback) {
 
-    delete homeObject.owner_id;
-    delete homeObject.owner_mail;
+    if (!((homeObject.owner_mail !== null && homeObject !== undefined) && (homeObject.owner_id !== null && homeObject.owner_id !== undefined))) {
 
+        delete homeObject.owner_mail;
+        delete homeObject.owner_id;
+    } else {
+        homeObject.owner_mail = homeObject.owner_mail.toLowerCase();
+    }
+
+    // TODO: Make the user fetching call series with home update.
+    //if (homeObject.owner_mail !== undefined || homeObject.owner_mail !== null) {
+    //
+    //    homeObject.owner_mail = homeObject.owner_mail.toLowerCase();
+    //    User.findOne({
+    //       email: homeObject.owner_mail
+    //    }, function (err, user) {
+    //
+    //        if (err || user === null || user === undefined) {
+    //
+    //            delete homeObject.owner_mail;
+    //        } else {
+    //
+    //            homeObject.owner_id = user._id;
+    //        }
+    //    });
+    //} else if (homeObject.owner_id !== undefined || homeObject.owner_id !== null) {
+    //
+    //    User.findOne({
+    //        _id: homeObject.owner_id
+    //    }, function (err, user) {
+    //
+    //        if (err || user === null || user === undefined) {
+    //
+    //            delete homeObject.owner_id;
+    //        } else {
+    //
+    //            homeObject.owner_mail = user.email;
+    //        }
+    //    });
+    //}
     if (homeObject.community_name !== undefined) {
 
         homeObject.location.community_name = homeObject.community_name;
@@ -175,6 +212,7 @@ HomeDAO.prototype.updateHome = function (homeObject, home_id, id_type, callback)
                         if (err) {
                             callback(err);
                         } else {
+
                             callback(null, Utility.getLocation(home._id, constants.Home, constants.Updated, constants.Homes));
                         }
                     });

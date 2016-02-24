@@ -171,11 +171,12 @@ UserDAO.prototype.getUsers = function (filters, fetch_type, pagination_config, s
                     });
                 } else {
 
-                    Home.count({owner_mail: filters.email}, function (err, count) {
+                    Home.count({owner_mail: filters.email}, function (err, home_count) {
 
-                        if (count > 0) {
+                        console.log(home_count);
+                        if (home_count > 0) {
 
-                            Product.count({owner_mail: filters.email}, function (err, product_count) {
+                            Product.count({owner_id: filters._id}, function (err, product_count) {
 
                                 if (product_count > 0) {
 
@@ -211,9 +212,9 @@ UserDAO.prototype.getUsers = function (filters, fetch_type, pagination_config, s
                     });
                 } else {
 
-                    Home.count({owner_id: filters._id}, function (err, count) {
+                    Home.count({owner_id: filters._id}, function (err, home_count) {
 
-                        if (count > 0) {
+                        if (home_count > 0) {
 
                             Product.count({owner_id: filters._id}, function (err, product_count) {
 
