@@ -34,10 +34,10 @@ MAILClient.prototype.triggerMail = function (buzz) {
             // specify jade template to load
 
             // for windows system
-            var template = __dirname + '\\views\\buzz_template.jade';
+            // var template = __dirname + '\\views\\buzz_template.jade';
 
             // for linux system
-            // var template = __dirname + '/views/buzz_template.jade';
+            var template = __dirname + '/views/buzz_template.jade';
 
             // get template from file system
             fs.readFile(template, 'utf8', function(err, file){
