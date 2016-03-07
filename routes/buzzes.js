@@ -87,7 +87,7 @@ router.route('/buzzes/:buzz_id')
 
                 response.status(204).json(location);
             }
-        }, {_id: buzz_id, status: status});
+        }, buzz_id, {status: status});
     }).get(function (request, response) {
 
     var buzz_id = request.params.buzz_id;
