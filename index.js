@@ -69,6 +69,7 @@ app.use('/api', require('./routes/buzzes'));
 app.use('/api', require('./routes/search'));
 app.use('/api', require('./routes/images'));
 app.use('/api', require('./routes/vendors'));
+app.use('/api', require('./routes/search_log.js'));
 
 app.listen(PORT);
 
