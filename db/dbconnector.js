@@ -10,6 +10,7 @@ var Image = require('./models/image');
 var fs = require('fs');
 var Utility = new require('./../utilities/index')();
 var Review = require('./models/review');
+var Search_Log = require('./models/search_log.js');
 
 var SMSClient = new require('./../utilities/sms_alert')();
 var MAILClient = new require('./../utilities/mail_alert')();
@@ -802,6 +803,73 @@ DBConnector.prototype.getCollectionCount = function (callback, collectionType, f
             break;
     }
 };
+
+DBConnector.prototype.addSearchLog = function (callback, searchObj) {
+
+    if (searchObj.email) {
+
+        Search_Log.findOneAndUpdate(
+            {
+                email: searchObj.email
+            }, {
+                $push: {
+                    "search": {
+                        keyword: searchObj.keyword,
+                        timestamp: Date.now()
+                    }
+                }
+            },
+            {
+                safe: true,
+                upsert: true,
+                // new : true
+            },
+            function(err, model) {
+                if (err) {
+                    callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});
+                } else {
+                    callback({code: 201, message: "Successfully updated user search keyword", description: "Successfully added keyword with the user email"});
+                }
+            }
+        );
+    } else {
+        Search_Log.findOneAndUpdate(
+            {
+                email: 'anonymous'
+            }, {
+                $push: {
+                    "search": {
+                        keyword: searchObj.keyword,
+                        timestamp: Date.now()
+                    }
+                }
+            },
+            {
+                safe: true,
+                upsert: true,
+                // new : true
+            },
+            function(err, model) {
+                if (err) {
+                    callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});
+                } else {
+                    callback({code: 201, message: "Successfully updated user search keyword", description: "Successfully added keyword with the user email"});
+                }
+            }
+        );
+    }
+
+}
+
+DBConnector.prototype.getSearchLog = function (callback) {
+    Search_Log.find({}).exec(function (err, logs) {
+        if (err) {
+            callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});
+        } else {
+            callback({code: 200, message: logs})
+        }
+    })
+}
 
 function _getCollectionCount(callback, collectionType, filters) {
 
