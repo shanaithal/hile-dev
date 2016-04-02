@@ -39,7 +39,6 @@ if (mongoose.connection.readyState === 0) {
 var DBConnector = function () {
     return Object.create(DBConnector.prototype);
 };
-
 var selfRefObject = new DBConnector();
 
 function _getLocation(resource_id, entity, operation, base_resource) {
@@ -669,107 +668,78 @@ DBConnector.prototype.getImages = function (callback, filters, fetchType) {
 
 DBConnector.prototype.getSearchTerm = function (callback, search_term, entity_type, filters, paginationConfig, sortConfig) {
 
-    var query;
+    var regExPattern = new RegExp('.*' + search_term + '.*', 'i');
+    var queryString = {$or: [{name: {$regex: regExPattern}},
+        {description: {$regex: regExPattern}}, {category_name: {$regex: regExPattern}},
+        {sub_category_name: {$regex: regExPattern}}, {home_name: {$regex: regExPattern}},
+        {owner_mail: {$regex: regExPattern}}]};
 
-    switch (entity_type) {
+    var query = Product.find(queryString);
 
-        case "home":
-            break;
-        case "user":
-            break;
-        default:
-            //query = Product.find({$text: {$search: search_term}});
-            if (paginationConfig.limit > config.maxCount) {
-                paginationConfig.skip = config.defaultSkip;
-                paginationConfig.limit = config.defaultLimit;
-            }
-            if (paginationConfig === {}) {
-                paginationConfig.skip = config.defaultSkip;
-                paginationConfig.limit = config.defaultLimit;
-            }
-            if (paginationConfig.skip < 1) {
-                paginationConfig.skip = config.defaultSkip;
-                paginationConfig.limit = config.defaultLimit;
-            }
-            if (paginationConfig.skip > 0) {
-                paginationConfig.skip = (paginationConfig.skip - 1) * paginationConfig.limit;
-            }
-            var regExPattern = new RegExp('.*' + search_term + '.*', 'i');
-            query = Product.find({
-                $or: [{name: {$regex: regExPattern}},
-                    {description: {$regex: regExPattern}}, {category_name: {$regex: regExPattern}},
-                    {sub_category_name: {$regex: regExPattern}}, {home_name: {$regex: regExPattern}},
-                    {owner_mail: {$regex: regExPattern}}]
-            }, fieldsOmittedFromResponse);
+    for (var key in filters) {
+
+        query.where(key).equals(filters[key]);
     }
-    query.lean().exec(function (err, resultSet) {
 
-            var pageElements = [];
-            var consolidatedResult = [];
-            if (filters !== undefined && JSON.stringify(filters) !== '{}') {
+    for (var key in sortConfig) {
 
-                var resultSetLength = resultSet.length;
-                for (var index = 0; index < resultSetLength; index++) {
+        var sortObj = {};
+        sortObj[key] = sortConfig[key];
+        query.sort(sortObj);
+    }
 
-                    for (var key in filters) {
+    //By default apply new first sort
+    query.sort({createdAt: -1});
+    if (paginationConfig !== undefined && paginationConfig !== null) {
 
-                        if (resultSet[index][key] === filters[key]) {
-
-                            consolidatedResult.push(resultSet[index]);
-                            break;
-                        }
-                    }
-                }
-            }
-            else {
-
-                consolidatedResult = resultSet;
-            }
-
-            if (paginationConfig.skip === undefined) {
-
-                pageElements = consolidatedResult;
-            } else {
-
-                var limit = parseInt(paginationConfig.limit);
-                for (var index = paginationConfig.skip; index <= paginationConfig.skip * limit; index++) {
-                    pageElements.push(consolidatedResult[index]);
-                }
-            }
-
-        //var productLength = pageElements.length;
-            pageElements.forEach(function (pageElement, index) {
-
-                Image.find({
-                    entity_type: "product",
-                    entity_id: pageElements[index]._id
-                }).lean().exec(function (err, images) {
-
-                    if (images !== undefined) {
-
-                        if (!Utility.isArray(images)) {
-
-                            images = [images];
-                        }
-                        if (images[0] !== undefined) {
-                            pageElements[index].image_content = images[0].content;
-
-                            var image_link = {
-                                href: config.service_url + "/images/" + images[0]._id,
-                                rel: "Image"
-                            };
-                            pageElements[index].images = [image_link];
-                        }
-                    }
-                });
-            });
-
-            //TODO: The call for getting image should be made series/sequential.
-            setTimeout(function () {
-                callback(null, Utility.getLinkedObjects(pageElements, {type: "product", linked_objects: ["self"]}));
-            }, 750);
+        if (paginationConfig.limit > config.maxCount) {
+            paginationConfig.skip = config.defaultSkip;
+            paginationConfig.limit = config.defaultLimit;
         }
-    );
+        if (paginationConfig.limit === undefined && paginationConfig.skip === undefined) {
+            paginationConfig.skip = config.defaultSkip;
+            paginationConfig.limit = config.defaultLimit;
+        }
+        if (paginationConfig.skip < 1) {
+            paginationConfig.skip = config.defaultSkip;
+            paginationConfig.limit = config.defaultLimit;
+        }
+        if (paginationConfig.skip > 0) {
+            paginationConfig.skip = (paginationConfig.skip - 1) * paginationConfig.limit;
+        }
+
+        query.skip(paginationConfig.skip).limit(paginationConfig.limit);
+    } else {
+
+        query.skip(config.defaultSkip).limit(config.defaultLimit);
+    }
+    query.lean();
+    query.exec(function (err, resultSet) {
+
+       if (err) {
+
+           console.log(err);
+           callback({code: 500, message: constants.INTERNAL_SERVER_ERROR, description: "DB error occurred while searching for the required product"});
+       } else {
+
+           if (!Utility.isArray(resultSet)) {
+
+               resultSet = [resultSet];
+           }
+
+           var countQuery = Product.find(queryString);
+
+           for (var key in filters) {
+
+               countQuery.where(key).equals(filters[key]);
+           }
+
+           countQuery.count(function(err, count) {
+
+               callback(null, Utility.getLinkedObjects(resultSet, {type: "product", linked_objects: ["self"]}), count);
+           });
+       }
+    });
 };
 
 DBConnector.prototype.createVendor = function (callback, vendorObject) {

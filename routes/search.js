@@ -3,20 +3,21 @@ var router = express.Router();
 var connector = new require('../db/dbconnector')();
 var errorResponse = new require('../utilities/error_response')();
 var Utility = new require('../utilities')();
+var config = require('../config');
 
 router.route('/search')
 	.get(function (request, response) {
 
-		var pageNumber = queryObject.page;
-		var elementCount = queryObject.count;
-		var paginationConfig = Utility.getPaginationConfig(request.query);
-		var sortConfig = Utility.getSortConfig(request.query);
+        var page = parseInt(request.query.page);
+        var elementCount = parseInt(request.query.count);
+        var paginationConfig = Utility.getPaginationConfig(request.query);
+        var sortConfig = Utility.getSortConfig(request.query);
 
 		var entity = request.query.entity;
 		var query = request.query.q;
 		delete request.query.q;
 		delete request.query.entity;
-		var filters = Utility.getFilters(queryObject);
+		var filters = Utility.getFilters(request.query);
 
 		connector.getSearchTerm(function (err, search_items, totalSearchResults) {
 
@@ -25,14 +26,20 @@ router.route('/search')
 			} else {
 
 				search_items = Utility.getFormattedResponse(search_items);
+                if (isNaN(elementCount)) {
+
+                    page=1;
+                    elementCount = config.defaultLimit;
+                }
+                console.log(totalSearchResults);
 				if (totalSearchResults > elementCount) {
 					search_items.data.pages = [];
 					var lastPage = totalSearchResults / elementCount;
-					if (pageNumber < lastPage) {
-						search_items.data.pages.push(Utility.getNextPage(request.url, parseInt(pageNumber) + 1, elementCount));
+					if (page < lastPage) {
+						search_items.data.pages.push(Utility.getNextPage(request.url, parseInt(page) + 1, elementCount));
 					}
-					if (pageNumber > 1) {
-						search_items.data.pages.push(Utility.getPreviousPage(request.url, parseInt(pageNumber) - 1, elementCount));
+					if (page > 1) {
+						search_items.data.pages.push(Utility.getPreviousPage(request.url, parseInt(page) - 1, elementCount));
 					}
 				}
 
