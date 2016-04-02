@@ -7,18 +7,16 @@ var Utility = new require('../utilities')();
 router.route('/search')
 	.get(function (request, response) {
 
-		var queryObject = request.query;
+		var pageNumber = queryObject.page;
+		var elementCount = queryObject.count;
+		var paginationConfig = Utility.getPaginationConfig(request.query);
+		var sortConfig = Utility.getSortConfig(request.query);
+
 		var entity = request.query.entity;
 		var query = request.query.q;
 		delete request.query.q;
 		delete request.query.entity;
-		var pageNumber = queryObject.page;
-		var elementCount = queryObject.count;
-		var sort_members = queryObject.sortby;
-		var sort_order = queryObject.order;
-		var sort_config = {sort_params: sort_members, order: sort_order};
 		var filters = Utility.getFilters(queryObject);
-		var pagination_config = {skip: pageNumber, limit: elementCount};
 
 		connector.getSearchTerm(function (err, search_items, totalSearchResults) {
 
@@ -41,7 +39,7 @@ router.route('/search')
 				search_items.data.collection_size =  totalSearchResults;
 				response.status(200).json(search_items);
 			}
-		}, query, entity, filters, pagination_config);
+		}, query, entity, filters, paginationConfig, sortConfig);
 		});
 
 module.exports = router;

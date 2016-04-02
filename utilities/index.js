@@ -1,6 +1,7 @@
 var config = require('../config');
 var constants = require('./constants');
 var validator = require('validator');
+var coreUtil = require('util');
 
 var Utility = function () {
 
@@ -19,50 +20,24 @@ Utility.prototype.getLocation = function (resourceId, entity, operation, baseRes
 
 Utility.prototype.isArray = function (entity) {
 
-    if (entity === null || entity === undefined) {
 
-        return false;
-    }
-    if (entity.constructor !== Array) {
-        return false;
-    }
-    return true;
-}
+    return coreUtil.isArray(entity);
+};
 
 Utility.prototype.getFormattedResponse = function (resultSet) {
     if (!this.isArray(resultSet)) {
         resultSet = [resultSet];
     }
-    var formatedResponse = {
+    return {
         data: {
             items: resultSet
         }
     };
-    return formatedResponse;
-}
+};
 
 Utility.prototype.getFilters = function (queryParams) {
 
-    var filters = queryParams;
-    if (filters.page != undefined) {
-        delete filters.page;
-    }
-    if (filters.count != undefined) {
-        delete filters.count;
-    }
-    if (filters.sortby != undefined) {
-        delete filters.sortby;
-    }
-    if (filters.order != undefined) {
-        delete filters.order;
-    }
-
-    if (filters === null) {
-
-        filters = {};
-    }
-    //var clone = JSON.parse(JSON.stringify(queryParams));
-    return filters;
+    return JSON.parse(JSON.stringify(queryParams));
 };
 
 Utility.prototype.getNextPage = function (path, page, count) {
@@ -71,7 +46,7 @@ Utility.prototype.getNextPage = function (path, page, count) {
     path = path.replace(/[c][o][u][n][t][=][0-9]+[&]/i, "").replace(/[c][o][u][n][t][=][0-9]+/i, "");
     path = config.service_url + path;
     if (path.indexOf('?') > -1) {
-        if (path.indexOf('?') === (path.length - 1)) {
+        if (path.indexOf('?') === (path.length - 1) || path.lastIndexOf('&') === (path.length - 1)) {
             path = path + "page=" + page + "&count=" + count;
         } else {
             path = path + "&page=" + page + "&count=" + count;
@@ -89,7 +64,11 @@ Utility.prototype.getPreviousPage = function (path, page, count) {
     path = path.replace(/[c][o][u][n][t][=][0-9]+[&]/i, "").replace(/[c][o][u][n][t][=][0-9]+/i, "");
     path = config.service_url + path;
     if (path.indexOf('?') > -1) {
-        path = path + "page=" + page + "&count=" + count;
+        if (path.indexOf('?') === (path.length - 1) || path.lastIndexOf('&') === (path.length - 1)) {
+            path = path + "page=" + page + "&count=" + count;
+        } else {
+            path = path + "&page=" + page + "&count=" + count;
+        }
     } else {
         path = path + "&page=" + page + "&count=" + count;
     }
@@ -107,7 +86,7 @@ Utility.prototype.getLinkedObjects = function (collections, entity_info) {
 
         case "user":
 
-            collections.forEach(function (element, index) {
+            collections.forEach(function (element) {
 
                 if (element.links === undefined) {
                     element.links = [];
@@ -147,7 +126,7 @@ Utility.prototype.getLinkedObjects = function (collections, entity_info) {
             break;
         case "home":
 
-            collections.forEach(function (element, index) {
+            collections.forEach(function (element) {
 
                 if (element.links === undefined) {
                     element.links = [];
@@ -184,7 +163,7 @@ Utility.prototype.getLinkedObjects = function (collections, entity_info) {
             break;
         case "product":
 
-            collections.forEach(function (element, index) {
+            collections.forEach(function (element) {
 
 
                 if (element.links === undefined) {
@@ -250,7 +229,7 @@ Utility.prototype.getLinkedObjects = function (collections, entity_info) {
             break;
         case "buzz":
 
-            collections.forEach(function (element, index) {
+            collections.forEach(function (element) {
 
                 if (element.links === undefined) {
                     element.links = [];
@@ -280,16 +259,12 @@ Utility.prototype.getLinkedObjects = function (collections, entity_info) {
                 element.links.push(owner_link);
             });
             break;
-
+        default :
+            break;
     }
 
     return collections;
 };
-
-function _removePageCountQueryParams(path) {
-
-    return path;
-}
 
 function _getLinkObject(path, rel) {
 
@@ -300,12 +275,13 @@ function _getLinkObject(path, rel) {
     return linkObject;
 }
 
-Utility.prototype.isLoggedIn = function (req, res, next) {
-    if (req.isAuthenticated())
-        return next();
-
-    res.redirect('/');
-}
+//To check if the user is logged in
+//Utility.prototype.isLoggedIn = function (req, res, next) {
+//    if (req.isAuthenticated())
+//        return next();
+//
+//    res.redirect('/');
+//};
 
 Utility.prototype.validateInput = function (input, entity_type, operation) {
 
@@ -419,6 +395,62 @@ Utility.prototype.validateInput = function (input, entity_type, operation) {
     }
 
     return null;
+};
+
+Utility.prototype.getPaginationConfig = function (queryParams) {
+
+    var paginationConfig = {};
+    if (!isNaN(queryParams.page) && !isNaN(queryParams.count)) {
+
+        paginationConfig.skip = parseInt(queryParams.page);
+        paginationConfig.limit = parseInt(queryParams.count);
+        delete queryParams.page;
+        delete queryParams.count;
+    }
+
+    return paginationConfig;
+};
+
+Utility.prototype.getSortConfig = function (queryParams) {
+
+    var sortConfig = {};
+    var ascMembers = queryParams[constants.QUERY_SORT_ASC];
+
+    if (ascMembers) {
+
+        if (!coreUtil.isArray(ascMembers)) {
+
+            if (ascMembers.indexOf(',') > -1) {
+
+                ascMembers = ascMembers.split(',');
+            } else {
+                ascMembers = [ascMembers];
+            }
+        }
+
+        ascMembers.forEach(function (element) {
+
+            sortConfig[element] = 1;
+        });
+    }
+    var descMembers = queryParams[constants.QUERY_SORT_DESC];
+    if (descMembers) {
+
+        if (!coreUtil.isArray(descMembers)) {
+
+            descMembers = [descMembers];
+        }
+
+        descMembers.forEach(function (element) {
+
+            sortConfig[element] = -1;
+        });
+    }
+
+    delete queryParams[constants.QUERY_SORT_ASC];
+    delete queryParams[constants.QUERY_SORT_DESC];
+
+    return sortConfig;
 };
 
 Utility.prototype.isEmail = function (string) {

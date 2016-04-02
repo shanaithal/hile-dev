@@ -6,7 +6,7 @@ var PORT = process.env.PORT || 3000;
 
 var app = new express();
 
-var passport = require('passport')
+var passport = require('passport');
 var session = require('express-session');
 var cookieParser = require('cookie-parser');
 

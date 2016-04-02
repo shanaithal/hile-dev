@@ -100,7 +100,7 @@ DBConnector.prototype.createSubCategory = function (callback, sub_categoryObject
     sub_category.save(function (err, sub_category) {
 
         if (err) {
-            callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});;
+            callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});
         } else {
             callback(null, _getLocation(sub_category._id, "SubCategory", "created", "subcategories"));
         }
@@ -115,18 +115,18 @@ DBConnector.prototype.getSubCategories = function (callback, filterObject, ident
 
                 if (err) {
 
-                    callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});;
+                    callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});
                 } else {
 
                     callback(null, subCategory);
                 }
-            })
+            });
             break;
         default :
             var query = QueryBuilder.build(SubCategory, filterObject, fieldsOmittedFromResponse);
             query.exec(function (err, subCategories) {
                 if (err) {
-                    callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});;
+                    callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});
                 } else {
                     callback(null, subCategories);
                 }
@@ -140,7 +140,7 @@ DBConnector.prototype.deleteSubCategory = function (callback, sub_category_id) {
     SubCategory.findOneAndRemove({_id: sub_category_id}, function (err) {
 
         if (err) {
-            callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});;
+            callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});
         } else {
             callback(null);
         }
@@ -160,11 +160,15 @@ DBConnector.prototype.getCategories = function (callback, filters, identifierTyp
             query = QueryBuilder.build(Category, filters, fieldsOmittedFromResponse);
             query.exec(function (err, category) {
                 if (err) {
-                    callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});;
+                    callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});
                 } else {
                     selfRefObject.getSubCategories(function (err, subCategories) {
                         if (err) {
-                            callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});;
+                            callback({
+                                code: 500,
+                                message: "Internal Server Error",
+                                description: "Unknown DB error occurred"
+                            });
                         } else {
                             if (subCategories.length > 0) {
                                 var clone = JSON.parse(JSON.stringify(category));
@@ -183,7 +187,7 @@ DBConnector.prototype.getCategories = function (callback, filters, identifierTyp
             query = QueryBuilder.build(Category, filters, fieldsOmittedFromResponse);
             query.exec(function (err, categories) {
                 if (err) {
-                    callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});;
+                    callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});
                 } else {
                     callback(null, categories);
                 }
@@ -199,7 +203,7 @@ DBConnector.prototype.deleteCategory = function (callback, category_id) {
         },
         function (err) {
             if (err) {
-                callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});;
+                callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});
             } else {
                 callback(null);
             }
@@ -215,18 +219,26 @@ DBConnector.prototype.getProducts = function (callback, filters, fetchType, pagi
 
     var query;
     switch (fetchType) {
-        case "_id":
+        case constants.Id:
             query = QueryBuilder.build(Product, {_id: filters._id}, fieldsOmittedFromResponse, pagination_config, sort_config);
             query.exec(function (err, product) {
 
                     if (err) {
 
-                        callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});;
+                        callback({
+                            code: 500,
+                            message: "Internal Server Error",
+                            description: "Unknown DB error occurred"
+                        });
                     } else {
 
                         if (product === undefined || product === null || JSON.stringify(product) === '{}') {
 
-                            callback({code: 404, message: "Not Found", description: "The requested resource could not be found"});;
+                            callback({
+                                code: 404,
+                                message: "Not Found",
+                                description: "The requested resource could not be found"
+                            });
                         } else {
                             Buzz.count({product_id: filters._id}, function (err, count) {
 
@@ -261,12 +273,12 @@ DBConnector.prototype.getProducts = function (callback, filters, fetchType, pagi
                                                 if (product.images === undefined) {
                                                     product.images = [];
                                                 }
-                                                images.forEach(function (element, index) {
+                                                images.forEach(function (element) {
 
                                                     var image_link = {
                                                         href: config.service_url + "/images/" + element._id,
                                                         rel: "Image"
-                                                    }
+                                                    };
 
                                                     product.images.push(image_link);
                                                 });
@@ -287,10 +299,10 @@ DBConnector.prototype.getProducts = function (callback, filters, fetchType, pagi
 
                 if (err) {
 
-                    callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});;
+                    callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});
                 } else {
 
-                    var productLength = products.length;
+                    //var productLength = products.length;
                     products.forEach(function (product, index) {
 
                         Image.find({
@@ -334,9 +346,9 @@ DBConnector.prototype.updateProduct = function (callback, productObject, product
     productDAO.updateProduct(productObject, product_id, callback);
 };
 
-DBConnector.prototype.deleteProduct = function (callback, product_id) {
+DBConnector.prototype.deleteProduct = function (callback, productId) {
 
-    productDAO.deleteProduct(prodcut_id, callback);
+    productDAO.deleteProduct(productId, callback);
 };
 
 DBConnector.prototype.createBuzz = function (callback, buzzObject) {
@@ -359,7 +371,11 @@ DBConnector.prototype.createBuzz = function (callback, buzzObject) {
                     user = user[0];
                     if (err) {
 
-                        callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});;
+                        callback({
+                            code: 500,
+                            message: "Internal Server Error",
+                            description: "Unknown DB error occurred"
+                        });
                     } else {
 
                         if ((user === null) || user === {}) {
@@ -376,7 +392,11 @@ DBConnector.prototype.createBuzz = function (callback, buzzObject) {
 
                                     if (err) {
 
-                                        callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});;
+                                        callback({
+                                            code: 500,
+                                            message: "Internal Server Error",
+                                            description: "Unknown DB error occurred"
+                                        });
                                     } else {
 
                                         if (oldBuzz === undefined || oldBuzz === null) {
@@ -399,7 +419,11 @@ DBConnector.prototype.createBuzz = function (callback, buzzObject) {
 
                                                     if (err) {
 
-                                                        callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});;
+                                                        callback({
+                                                            code: 500,
+                                                            message: "Internal Server Error",
+                                                            description: "Unknown DB error occurred"
+                                                        });
                                                     } else {
 
                                                         SMSClient.triggerAlert(buzz);
@@ -432,7 +456,11 @@ DBConnector.prototype.createBuzz = function (callback, buzzObject) {
 
                                                             if (err) {
 
-                                                                callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});;
+                                                                callback({
+                                                                    code: 500,
+                                                                    message: "Internal Server Error",
+                                                                    description: "Unknown DB error occurred"
+                                                                });
                                                             } else {
 
                                                                 SMSClient.triggerAlert(buzz);
@@ -465,7 +493,11 @@ DBConnector.prototype.createBuzz = function (callback, buzzObject) {
 
                                                         if (err) {
 
-                                                            callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});;
+                                                            callback({
+                                                                code: 500,
+                                                                message: "Internal Server Error",
+                                                                description: "Unknown DB error occurred"
+                                                            });
                                                         } else {
 
                                                             SMSClient.triggerAlert(buzz);
@@ -634,7 +666,7 @@ DBConnector.prototype.getImages = function (callback, filters, fetchType) {
     }
 };
 
-DBConnector.prototype.getSearchTerm = function (callback, search_term, entity_type, filters, pagination_config) {
+DBConnector.prototype.getSearchTerm = function (callback, search_term, entity_type, filters, paginationConfig, sortConfig) {
 
     var query;
 
@@ -646,20 +678,20 @@ DBConnector.prototype.getSearchTerm = function (callback, search_term, entity_ty
             break;
         default:
             //query = Product.find({$text: {$search: search_term}});
-            if (pagination_config.limit > config.maxCount) {
-                pagination_config.skip = config.defaultSkip;
-                pagination_config.limit = config.defaultLimit;
+            if (paginationConfig.limit > config.maxCount) {
+                paginationConfig.skip = config.defaultSkip;
+                paginationConfig.limit = config.defaultLimit;
             }
-            if (pagination_config === {}) {
-                pagination_config.skip = config.defaultSkip;
-                pagination_config.limit = config.defaultLimit;
+            if (paginationConfig === {}) {
+                paginationConfig.skip = config.defaultSkip;
+                paginationConfig.limit = config.defaultLimit;
             }
-            if (pagination_config.skip < 1) {
-                pagination_config.skip = config.defaultSkip;
-                pagination_config.limit = config.defaultLimit;
+            if (paginationConfig.skip < 1) {
+                paginationConfig.skip = config.defaultSkip;
+                paginationConfig.limit = config.defaultLimit;
             }
-            if (pagination_config.skip > 0) {
-                pagination_config.skip = (pagination_config.skip - 1) * pagination_config.limit;
+            if (paginationConfig.skip > 0) {
+                paginationConfig.skip = (paginationConfig.skip - 1) * paginationConfig.limit;
             }
             var regExPattern = new RegExp('.*' + search_term + '.*', 'i');
             query = Product.find({
@@ -693,18 +725,18 @@ DBConnector.prototype.getSearchTerm = function (callback, search_term, entity_ty
                 consolidatedResult = resultSet;
             }
 
-            if (pagination_config.skip === undefined) {
+            if (paginationConfig.skip === undefined) {
 
                 pageElements = consolidatedResult;
             } else {
 
-                var limit = parseInt(pagination_config.limit);
-                for (var index = pagination_config.skip; index <= pagination_config.skip * limit; index++) {
+                var limit = parseInt(paginationConfig.limit);
+                for (var index = paginationConfig.skip; index <= paginationConfig.skip * limit; index++) {
                     pageElements.push(consolidatedResult[index]);
                 }
             }
 
-            var productLength = pageElements.length;
+        //var productLength = pageElements.length;
             pageElements.forEach(function (pageElement, index) {
 
                 Image.find({
@@ -737,7 +769,7 @@ DBConnector.prototype.getSearchTerm = function (callback, search_term, entity_ty
             }, 750);
         }
     );
-}
+};
 
 DBConnector.prototype.createVendor = function (callback, vendorObject) {
 
@@ -749,68 +781,68 @@ DBConnector.prototype.getVendors = function (callback, filters, fetchType, pagin
     vendorDAO.getVendors(filters, fetchType, paginationConfig, sortConfig, callback);
 };
 
-DBConnector.prototype.getCollectionCount = function (callback, collectionType) {
+DBConnector.prototype.getCollectionCount = function (callback, collectionType, filters) {
 
     switch (collectionType.toLowerCase()) {
 
-        case "user":
-            _getCollectionCount(callback, User);
+        case constants.User:
+            _getCollectionCount(callback, User, filters);
             break;
-        case "home":
-            _getCollectionCount(callback, Home);
+        case constants.Home:
+            _getCollectionCount(callback, Home, filters);
             break;
-        case "product":
-            _getCollectionCount(callback, Product);
+        case constants.Product:
+            _getCollectionCount(callback, Product, filters);
             break;
-        case "buzz":
-            _getCollectionCount(callback, Buzz);
+        case constants.Buzz:
+            _getCollectionCount(callback, Buzz, filters);
             break;
-        case "vendor":
-            _getCollectionCount(callback, Vendor);
+        case constants.Vendor:
+            _getCollectionCount(callback, Vendor, filters);
             break;
     }
 };
 
-function _getCollectionCount(callback, collectionType) {
+function _getCollectionCount(callback, collectionType, filters) {
 
-    collectionType.find({}).count(function (err, count) {
+    collectionType.find(filters).count(function (err, count) {
 
         if (err) {
-            callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});;
+            callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});
         } else {
             callback(null, count);
         }
     });
 }
 
-function _insertImage(callback, images, entity_type, entity_id, entity_location) {
-
-    if (!Utility.isArray(images)) {
-        images = [images];
-    }
-
-    var successfulUploads = 0;
-    var totalImages = images.length;
-
-    images.forEach(function (imageData, index) {
-
-        var image = new Image();
-        image.entity_type = entity_type;
-        image.entity_id = entity_id;
-        image.content = imageData;
-
-        image.save(function (err, uploadedImage) {
-
-            if (err) {
-
-                callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});;
-            } else {
-
-                ++successfulUploads;
-            }
-        });
-    });
-
-    callback(null, entity_location);
-}
+//function _insertImage(callback, images, entity_type, entity_id, entity_location) {
+//
+//    if (!Utility.isArray(images)) {
+//        images = [images];
+//    }
+//
+//    var successfulUploads = 0;
+//    var totalImages = images.length;
+//
+//    images.forEach(function (imageData) {
+//
+//        var image = new Image();
+//        image.entity_type = entity_type;
+//        image.entity_id = entity_id;
+//        image.content = imageData;
+//
+//        image.save(function (err, uploadedImage) {
+//
+//            if (err) {
+//
+//                callback({code: 500, message: "Internal Server Error", description: "Unknown DB error occurred"});
+//            } else {
+//
+//                ++successfulUploads;
+//            }
+//        });
+//    });
+//
+//    callback(null, entity_location);
+//};
 module.exports = DBConnector;

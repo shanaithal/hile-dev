@@ -45,16 +45,10 @@ router.route('/homes')
 
         var page = parseInt(request.query.page);
         var elementCount = parseInt(request.query.count);
-        var sort_params = request.query.sortby;
-        var sort_order = request.query.order;
-        if (!Utility.isArray(sort_params)) {
-            sort_params = [sort_params];
-        }
-        var sort_config = {sort_params: sort_params, order: sort_order};
+        var paginationConfig = Utility.getPaginationConfig(request.query);
+        var sortConfig = Utility.getSortConfig(request.query);
+
         var filters = Utility.getFilters(request.query);
-        var paginationConfig = {};
-        paginationConfig.skip = page;
-        paginationConfig.limit = elementCount;
 
         connector.getHomes(function (err, homes) {
             if (err) {
@@ -86,7 +80,7 @@ router.route('/homes')
                     errorResponse.sendErrorResponse(response, 404, constants.NOT_FOUND_ERROR, "There are no homes in the System.");
                 }
             }
-        }, filters, constants.Collection, paginationConfig, sort_config);
+        }, filters, constants.Collection, paginationConfig, sortConfig);
     });
 
 router.route('/homes/:home_id')

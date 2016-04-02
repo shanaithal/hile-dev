@@ -23,18 +23,10 @@ router.route('/products')
 
     var page = parseInt(request.query.page);
     var elementCount = parseInt(request.query.count);
-    var sort_params = request.query.sortby;
-    var sort_order = request.query.order;
-    if (!Utility.isArray(sort_params)) {
-        sort_params = [sort_params];
-    }
-    var sort_config = {sort_params: sort_params, order: sort_order};
+    var paginationConfig = Utility.getPaginationConfig(request.query);
+    var sortConfig = Utility.getSortConfig(request.query);
+
     var filters = Utility.getFilters(request.query);
-    var paginationConfig = {};
-    if (!isNaN(page) && !isNaN(elementCount)) {
-        paginationConfig.skip = page;
-        paginationConfig.limit = elementCount;
-    }
 
     connector.getProducts(function (err, products) {
         if (err) {
@@ -63,12 +55,12 @@ router.route('/products')
                         }
                     }
                     response.status(200).json(products);
-                }, "product");
+                }, "product", filters);
             } else {
                 errorResponse.sendErrorResponse(response, 404, "Not Found", "There are no homes in the System.");
             }
         }
-    }, filters, "collection", paginationConfig, sort_config);
+    }, filters, "collection", paginationConfig, sortConfig);
 });
 
 router.route('/products/:product_id')

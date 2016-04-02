@@ -36,7 +36,11 @@ var constants = {
     HTTP_POST: "POST",
     HTTP_PUT: "PUT",
     HTTP_GET: "GET",
-    HTTP_DELETE: "DELETE"
+    HTTP_DELETE: "DELETE",
+    ASC: "asc",
+    DESC: "desc",
+    QUERY_SORT_ASC: "sort.asc",
+    QUERY_SORT_DESC: "sort.desc"
 };
 
 module.exports = constants;

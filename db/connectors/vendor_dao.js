@@ -6,7 +6,7 @@ var constants = require('../../utilities/constants');
 var VendorDAO = function () {
 
     return Object.create(VendorDAO.prototype);
-}
+};
 
 VendorDAO.prototype.createVendor = function (vendorObject, callback) {
 

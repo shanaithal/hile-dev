@@ -1,29 +1,22 @@
 var config = require('../config');
-var fieldsOmittedFromResponse = {
-	'__v': 0,
-	'createdAt': 0
-};
 
 var QueryBuilder = function () {
 
 	return Object.create(QueryBuilder.prototype);
 };
 
-QueryBuilder.prototype.build = function (query_object, search_terms, required_fields, sort_config, pagination_config) {
+QueryBuilder.prototype.build = function (query_object, search_terms, required_fields, sortConfig, pagination_config) {
 
 	var query = query_object.find(search_terms).select(required_fields);
 
-	if (sort_config !== {} && sort_config !== undefined) {
-		var sort_order = sort_config.order === 'ascending' ? 1 : -1;
-		var sort_params = sort_config.sort_params;
+	for (var key in sortConfig) {
 
-		for (var index in sort_params) {
-			var sort_object = {};
-			sort_object[sort_params[index]] = sort_order;
-			query = query.sort(sort_object);
-		}
+		var sortObj = {};
+		sortObj[key] = sortConfig[key];
+		query.sort(sortObj);
 	}
 
+	//By default apply new first sort
 	query.sort({createdAt: -1});
 	if (pagination_config !== undefined && pagination_config !== null) {
 
