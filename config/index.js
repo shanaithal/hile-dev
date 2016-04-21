@@ -14,8 +14,8 @@ var config = {
 		918237392861
 	],
 	mailAlert: {
-		senderMail: 'suryadeep10@gmail.com',
-		appSpecificPassword: 'ygdunlahtwxhmaap'
+		senderMail: 'abhay.raj@hile.in',
+		appSpecificPassword: 'z9d6yzfit15j'
 	}
 };
 

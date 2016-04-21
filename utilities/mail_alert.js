@@ -13,7 +13,7 @@ var Product = require('../db/models/product');
 var transport = nodemailer.createTransport({
      // in case it is a well known service you can simply name it. No need of host and ports
      // to see the list of well known services you can visit https://github.com/nodemailer/nodemailer-wellknown#supported-services
-    service: 'gmail',
+    service: 'zoho',
     auth: {
         user: config.mailAlert.senderMail,
         pass: config.mailAlert.appSpecificPassword // this should be the Application Specific Password else it wont work
@@ -52,11 +52,11 @@ MAILClient.prototype.triggerMail = function (buzz) {
                     var buzzer_context = {locals: {content: 'Hey there'}};
 
                     var buzzer_context = {content: 'Thanks for using Hile. You were interested in ' + product.name + '\
-                     from ' + buzz.home_name + '. Let us check with the service provider and get \
+                     from ' + product.home_name + '. Let us check with the service provider and get \
                     back to you. Our No: +91-8237392861'};
 
                     var buzzed_context = {content: 'Hi, greetings from Hile. Great news! Your product: ' + product.name + '\
-                     has been buzzed from ' + buzz.buzzer_mail + '. We will get in touch to give you more details'};
+                     has been buzzed by ' + buzz.buzzer_mail + '. We will get in touch to give you more details'};
 
                     var admin_context = {content: 'Hello Admin product ' + product.name + ': ' + buzz.product_id + ' has been \
                     buzzed by ' + buzz.buzzer_mail + ' and owner is ' + product.owner_mail + '  \
@@ -75,7 +75,7 @@ MAILClient.prototype.triggerMail = function (buzz) {
                     transport.sendMail({
                         from: config.mailAlert.senderMail,
                         to: buzzer_mail,
-                        subject: 'You have buzzed someone!',
+                        subject: 'HILE: You have buzzed someone!!',
                         html: buzzer_html
                     }, function (err, info) {
                         if (err) {
@@ -89,7 +89,7 @@ MAILClient.prototype.triggerMail = function (buzz) {
                     transport.sendMail({
                         from: config.mailAlert.senderMail,
                         to: buzzed_user_mail,
-                        subject: 'You have been buzzed!',
+                        subject: 'HILE: You have been buzzed!!',
                         html: buzzed_html
                     }, function (err, info) {
                         if (err) {
